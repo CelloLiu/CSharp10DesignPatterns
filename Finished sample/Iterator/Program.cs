@@ -13,7 +13,7 @@ var peopleIterator = people.CreateIterator();
 // use the iterator to run through the people
 // in the collection; they should come out 
 // in alphabetical order
-for (Person person = peopleIterator.First(); 
+for (Person? person = peopleIterator.First();
     !peopleIterator.IsDone; 
     person = peopleIterator.Next())
 {

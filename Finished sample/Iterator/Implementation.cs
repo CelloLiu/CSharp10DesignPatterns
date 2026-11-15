@@ -18,7 +18,7 @@
     public interface IPeopleIterator 
     {
         Person First();
-        Person Next();
+        Person? Next();
         bool IsDone { get; }
         Person CurrentItem { get; }
     }
@@ -43,7 +43,7 @@
                 .OrderBy(p => p.Name).ToList()[_current];
         }
 
-        public Person Next()
+        public Person? Next()
         {
             _current++;
             if (!IsDone)

@@ -56,7 +56,7 @@ namespace Adapter.ClassAdapter
     /// </summary>
     public class CityAdapter : ExternalSystem, ICityAdapter
     { 
-        public City GetCity()
+        public new City GetCity()
         {
             // call into the external system 
             var cityFromExternalSystem = base.GetCity();

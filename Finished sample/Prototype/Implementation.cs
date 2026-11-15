@@ -39,7 +39,7 @@ namespace Prototype
             {
                 var settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
                 var objectAsJson = JsonConvert.SerializeObject(this, typeof(Employee), settings);
-                return JsonConvert.DeserializeObject<Person>(objectAsJson, settings);
+                return JsonConvert.DeserializeObject<Person>(objectAsJson, settings)!;
             }
 
 
@@ -65,7 +65,7 @@ namespace Prototype
             {
                 var settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
                 var objectAsJson = JsonConvert.SerializeObject(this, typeof(Manager), settings);
-                return JsonConvert.DeserializeObject<Person>(objectAsJson, settings);
+                return JsonConvert.DeserializeObject<Person>(objectAsJson, settings)!;
             }
 
             return (Person)MemberwiseClone();

@@ -20,7 +20,7 @@ characterObject?.Draw("Comic Sans", 18);
 
 // create unshared concrete flyweight (paragraph)
 var paragraph = characterFactory.CreateParagraph(
-    new List<ICharacter>() { characterObject }, 1);
+    new List<ICharacter>() { characterObject! }, 1);
 
 // draw the paragraph
 paragraph.Draw("Lucinda", 12);
