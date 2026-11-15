@@ -1,6 +1,6 @@
 ﻿using Flyweight;
 
-var aBunchOfCharacters = "abba"; 
+var aBunchOfCharacters = "abba";
 
 var characterFactory = new CharacterFactory();
 
@@ -18,11 +18,13 @@ characterObject?.Draw("Times New Roman", 16);
 characterObject = characterFactory.GetCharacter(aBunchOfCharacters[3]);
 characterObject?.Draw("Comic Sans", 18);
 
-// create unshared concrete flyweight (paragraph)
-var paragraph = characterFactory.CreateParagraph(
-    new List<ICharacter>() { characterObject! }, 1);
+if (characterObject is not null)
+{
+    // create unshared concrete flyweight (paragraph)
+    var paragraph = characterFactory.CreateParagraph([characterObject], 1);
 
-// draw the paragraph
-paragraph.Draw("Lucinda", 12);
+    // draw the paragraph
+    paragraph.Draw("Lucinda", 12);
+}
 
 Console.ReadKey();

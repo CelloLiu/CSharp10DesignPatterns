@@ -1,6 +1,6 @@
 ﻿using Visitor;
 
-// create container & add conrete elements
+// create container & add concrete elements
 var container = new Container();
 container.Customers.Add(new Customer("Sophie", 500));
 container.Customers.Add(new Customer("Karen", 1000));

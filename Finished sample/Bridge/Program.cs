@@ -1,10 +1,9 @@
-﻿// create a menu implementation
-
-using Bridge;
+﻿using Bridge;
 
 var noCoupon = new NoCoupon();
 var oneEuroCoupon = new OneEuroCoupon();
 
+// any menu can be combined with any coupon
 var meatBasedMenu = new MeatBasedMenu(noCoupon);
 Console.WriteLine($"Meat based menu, no coupon: {meatBasedMenu.CalculatePrice()} euro.");
 
@@ -16,5 +15,5 @@ Console.WriteLine($"Vegetarian menu, no coupon: {vegetarianMenu.CalculatePrice()
 
 vegetarianMenu = new VegetarianMenu(oneEuroCoupon);
 Console.WriteLine($"Vegetarian menu, one euro coupon: {vegetarianMenu.CalculatePrice()} euro.");
- 
+
 Console.ReadKey();

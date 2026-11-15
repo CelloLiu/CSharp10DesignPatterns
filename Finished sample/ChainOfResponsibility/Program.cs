@@ -1,12 +1,13 @@
 ﻿using ChainOfResponsibility;
 using System.ComponentModel.DataAnnotations;
 
-var validDocument = new Document("How to Avoid Java Development", 
+var validDocument = new Document("How to Avoid Java Development",
     DateTimeOffset.UtcNow, true, true);
-var invalidDocument = new Document("How to Avoid Java Development", 
+// not approved by litigation
+var invalidDocument = new Document("How to Avoid Java Development",
     DateTimeOffset.UtcNow, false, true);
 
-// chain a set of handlers
+// chain a set of handlers: title -> last modified -> litigation -> management
 var documentHandlerChain = new DocumentTitleHandler();
 documentHandlerChain
     .SetSuccessor(new DocumentLastModifiedHandler())

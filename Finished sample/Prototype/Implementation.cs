@@ -1,74 +1,44 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Threading.Tasks;
+﻿// Prototype: create new objects by copying an existing one (the prototype)
+// instead of building them from scratch.
+using Newtonsoft.Json;
 
-namespace Prototype
+namespace Prototype;
+
+/// <summary>Prototype</summary>
+public abstract class Person(string name)
 {
-    /// <summary>
-    /// Prototype abstract class
-    /// </summary>
-    public abstract class Person
-    {
-        public abstract string Name { get; set; }
-
-        public abstract Person Clone(bool deepClone);
-      
-    }
+    public string Name { get; set; } = name;
 
     /// <summary>
-    /// ConcretePrototype1
+    /// A shallow clone copies the object but shares the objects it refers to.
+    /// A deep clone also copies everything the object refers to.
     /// </summary>
-    public class Employee : Person
+    public abstract Person Clone(bool deepClone);
+
+    // Deep clone by writing the whole object to JSON and reading it back,
+    // which produces brand-new copies of everything it contains.
+    protected Person DeepClone()
     {
-        public Manager Manager { get; set; }
-        public override string Name { get; set; }
-         
-        public Employee(string name, Manager manager)
-        {
-            Name = name;
-            Manager = manager;
-        }
+        var settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
+        var objectAsJson = JsonConvert.SerializeObject(this, GetType(), settings);
 
-        public override Person Clone(bool deepClone = false)
-        {
-            if (deepClone)
-            {
-                var settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
-                var objectAsJson = JsonConvert.SerializeObject(this, typeof(Employee), settings);
-                return JsonConvert.DeserializeObject<Person>(objectAsJson, settings)!;
-            }
-
-
-            return (Person)MemberwiseClone();
-        }
+        return JsonConvert.DeserializeObject<Person>(objectAsJson, settings)
+            ?? throw new InvalidOperationException("The object could not be cloned.");
     }
+}
 
-    /// <summary>
-    /// ConcretePrototype2
-    /// </summary>
-    public class Manager : Person
-    {
-        public override string Name { get; set; }
- 
-        public Manager(string name)
-        {
-            Name = name;
-        }
+/// <summary>ConcretePrototype</summary>
+public class Employee(string name, Manager manager) : Person(name)
+{
+    public Manager Manager { get; set; } = manager;
 
-        public override Person Clone(bool deepClone = false)
-        {
-            if (deepClone)
-            {
-                var settings = new JsonSerializerSettings { TypeNameHandling = TypeNameHandling.All };
-                var objectAsJson = JsonConvert.SerializeObject(this, typeof(Manager), settings);
-                return JsonConvert.DeserializeObject<Person>(objectAsJson, settings)!;
-            }
+    public override Person Clone(bool deepClone = false) =>
+        deepClone ? DeepClone() : (Person)MemberwiseClone();
+}
 
-            return (Person)MemberwiseClone();
-        }
-    }
+/// <summary>ConcretePrototype</summary>
+public class Manager(string name) : Person(name)
+{
+    public override Person Clone(bool deepClone = false) =>
+        deepClone ? DeepClone() : (Person)MemberwiseClone();
 }

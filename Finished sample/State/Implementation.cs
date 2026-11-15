@@ -1,169 +1,110 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// State: an object (the bank account) changes its behavior when its internal
+// state changes. Each state is its own class, and decides which state comes next.
+namespace State;
 
-namespace State
+/// <summary>State</summary>
+public abstract class BankAccountState(decimal balance, BankAccount bankAccount)
 {
-    /// <summary>
-    /// State
-    /// </summary>
-    public abstract class BankAccountState
+    public BankAccount BankAccount { get; } = bankAccount;
+    public decimal Balance { get; protected set; } = balance;
+
+    public abstract void Deposit(decimal amount);
+    public abstract void Withdraw(decimal amount);
+}
+
+/// <summary>ConcreteState: the balance is below 0</summary>
+public class OverdrawnState(decimal balance, BankAccount bankAccount)
+    : BankAccountState(balance, bankAccount)
+{
+    public override void Deposit(decimal amount)
     {
-        public BankAccount BankAccount { get; protected set; } = null!;
-        public decimal Balance { get; protected set; }
-
-        public abstract void Deposit(decimal amount);
-        public abstract void Withdraw(decimal amount);
-    }
-
-    /// <summary>
-    /// ConcreteState
-    /// </summary>
-    public class OverdrawnState : BankAccountState
-    {
-        public OverdrawnState(decimal balance, BankAccount bankAccount)
+        Console.WriteLine($"In {GetType()}, depositing {amount}");
+        Balance += amount;
+        if (Balance >= 0)
         {
-            Balance = balance;
-            BankAccount = bankAccount;
-        }
-
-        /// <summary>
-        /// Handle a deposit
-        /// </summary> 
-        public override void Deposit(decimal amount)
-        {
-            Console.WriteLine($"In {GetType()}, depositing {amount}");
-            Balance += amount;
-            if (Balance >= 0)
-            {
-                // change state to regular
-                BankAccount.BankAccountState = new RegularState(Balance, BankAccount);
-            } 
-        }
-
-        /// <summary>
-        /// Handle withdrawing
-        /// </summary> 
-        public override void Withdraw(decimal amount)
-        {
-            // cannot withdraw
-            Console.WriteLine($"In {GetType()}, cannot withdraw, balance {Balance}");
+            // change state to regular
+            BankAccount.BankAccountState = new RegularState(Balance, BankAccount);
         }
     }
 
-    /// <summary>
-    /// ConcreteState
-    /// </summary>
-    public class RegularState : BankAccountState
+    public override void Withdraw(decimal amount)
     {
-        public RegularState(decimal balance, BankAccount bankAccount)
-        {
-            Balance = balance;
-            BankAccount = bankAccount;
-        }
+        // cannot withdraw
+        Console.WriteLine($"In {GetType()}, cannot withdraw, balance {Balance}");
+    }
+}
 
-        /// <summary>
-        /// Handle a deposit
-        /// </summary> 
-        public override void Deposit(decimal amount)
+/// <summary>ConcreteState: the balance is between 0 and 1000</summary>
+public class RegularState(decimal balance, BankAccount bankAccount)
+    : BankAccountState(balance, bankAccount)
+{
+    public override void Deposit(decimal amount)
+    {
+        Console.WriteLine($"In {GetType()}, depositing {amount}");
+        Balance += amount;
+        if (Balance >= 1000)
         {
-            Console.WriteLine($"In {GetType()}, depositing {amount}");
-            Balance += amount;
-            if (Balance >= 1000)
-            {
-                // change state to gold
-                BankAccount.BankAccountState = new GoldState(Balance, BankAccount);
-            }
-        }
-
-        /// <summary>
-        /// Handle withdrawing
-        /// </summary> 
-        public override void Withdraw(decimal amount)
-        {
-            Console.WriteLine($"In {GetType()}, withdrawing {amount} from {Balance}");
-            // change state to overdrawn when withdrawing results in less than zero
-            Balance -= amount;
-            if (Balance < 0)
-            {
-                // change state to overdrawn
-                BankAccount.BankAccountState = new OverdrawnState(Balance, BankAccount);
-            }
+            // change state to gold
+            BankAccount.BankAccountState = new GoldState(Balance, BankAccount);
         }
     }
 
-    /// <summary>
-    /// ConcreteState
-    /// </summary>
-    public class GoldState : BankAccountState
+    public override void Withdraw(decimal amount)
     {
-        public GoldState(decimal balance, BankAccount bankAccount)
+        Console.WriteLine($"In {GetType()}, withdrawing {amount} from {Balance}");
+        Balance -= amount;
+        if (Balance < 0)
         {
-            Balance = balance;
-            BankAccount = bankAccount;
-        }
-
-        /// <summary>
-        /// Handle a deposit
-        /// </summary> 
-        public override void Deposit(decimal amount)
-        {
-            Console.WriteLine($"In {GetType()}, depositing {amount} + 10% bonus: {amount/10}");
-            Balance += amount + (amount/10);
-        }
-
-        /// <summary>
-        /// Handle withdrawing
-        /// </summary> 
-        public override void Withdraw(decimal amount)
-        {
-            Console.WriteLine($"In {GetType()}, withdrawing {amount} from {Balance}");
-            // change state to overdrawn when withdrawing results in less than zero
-            Balance -= amount;
-            if (Balance < 1000 && Balance >= 0)
-            {
-                // change state to regular
-                BankAccount.BankAccountState = new RegularState(Balance, BankAccount);
-            }
-            else if (Balance < 0)
-            {
-                // change state to overdrawn
-                BankAccount.BankAccountState = new OverdrawnState(Balance, BankAccount);
-            }
+            // change state to overdrawn
+            BankAccount.BankAccountState = new OverdrawnState(Balance, BankAccount);
         }
     }
+}
 
-    /// <summary>
-    /// Context
-    /// </summary>
-    public class BankAccount
+/// <summary>ConcreteState: the balance is 1000 or more, deposits get a bonus</summary>
+public class GoldState(decimal balance, BankAccount bankAccount)
+    : BankAccountState(balance, bankAccount)
+{
+    public override void Deposit(decimal amount)
     {
-        public BankAccountState BankAccountState { get; set; }
-        public decimal Balance { get { return BankAccountState.Balance; } }
+        Console.WriteLine($"In {GetType()}, depositing {amount} + 10% bonus: {amount / 10}");
+        Balance += amount + (amount / 10);
+    }
 
-        public BankAccount()
+    public override void Withdraw(decimal amount)
+    {
+        Console.WriteLine($"In {GetType()}, withdrawing {amount} from {Balance}");
+        Balance -= amount;
+        if (Balance < 0)
         {
-            BankAccountState = new RegularState(200, this);
+            // change state to overdrawn
+            BankAccount.BankAccountState = new OverdrawnState(Balance, BankAccount);
         }
-
-        /// <summary>
-        /// Request a deposit
-        /// </summary> 
-        public void Deposit(decimal amount)
+        else if (Balance < 1000)
         {
-            // let the current state handle the deposit
-            BankAccountState.Deposit(amount);
-        }
-
-        /// <summary>
-        /// Request a withdrawal
-        /// </summary> 
-        public void Withdraw(decimal amount)
-        {
-            // let the current state handle the withdrawel
-            BankAccountState.Withdraw(amount);
+            // change state to regular
+            BankAccount.BankAccountState = new RegularState(Balance, BankAccount);
         }
     }
+}
+
+/// <summary>
+/// Context: hands every request to its current state object.
+/// </summary>
+public class BankAccount
+{
+    public BankAccountState BankAccountState { get; set; }
+    public decimal Balance => BankAccountState.Balance;
+
+    public BankAccount()
+    {
+        // a new account starts as a regular account with a balance of 200
+        BankAccountState = new RegularState(200, this);
+    }
+
+    // let the current state handle the deposit
+    public void Deposit(decimal amount) => BankAccountState.Deposit(amount);
+
+    // let the current state handle the withdrawal
+    public void Withdraw(decimal amount) => BankAccountState.Withdraw(amount);
 }

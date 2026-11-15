@@ -1,29 +1,25 @@
 ﻿using Interpreter;
 
-var expressions = new List<RomanExpression>
-{
-    new RomanHunderdExpression(),
+// the order matters: hundreds first, then tens, then ones
+List<RomanExpression> expressions =
+[
+    new RomanHundredExpression(),
     new RomanTenExpression(),
-    new RomanOneExpression(),
-};
+    new RomanOneExpression()
+];
 
-var context = new RomanContext(5);
-foreach (var expression in expressions)
-{
-    expression.Interpret(context);
-}
-Console.WriteLine($"Translating Arabic numerals to Roman numerals: 5 = {context.Output}");
+Translate(5);
+Translate(81);
+Translate(733);
 
-context = new RomanContext(81);
-foreach (var expression in expressions)
+// let every expression interpret its part of the number
+void Translate(int number)
 {
-    expression.Interpret(context);
-}
-Console.WriteLine($"Translating Arabic numerals to Roman numerals: 81 = {context.Output}");
+    var context = new RomanContext(number);
+    foreach (var expression in expressions)
+    {
+        expression.Interpret(context);
+    }
 
-context = new RomanContext(733);
-foreach (var expression in expressions)
-{
-    expression.Interpret(context);
+    Console.WriteLine($"Translating Arabic numerals to Roman numerals: {number} = {context.Output}");
 }
-Console.WriteLine($"Translating Arabic numerals to Roman numerals: 733 = {context.Output}");

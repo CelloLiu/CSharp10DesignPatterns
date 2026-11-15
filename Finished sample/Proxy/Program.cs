@@ -1,15 +1,16 @@
-﻿
-// without proxy
+﻿using Proxy;
+
+// without proxy: the expensive loading happens right away
 Console.WriteLine("Constructing document.");
-var myDocument = new Proxy.Document("MyDocument.pdf");
+var myDocument = new Document("MyDocument.pdf");
 Console.WriteLine("Document constructed.");
 myDocument.DisplayDocument();
 
 Console.WriteLine();
 
-// with proxy 
+// with proxy: the loading only happens when the document is displayed
 Console.WriteLine("Constructing document proxy.");
-var myDocumentProxy = new Proxy.DocumentProxy("MyDocument.pdf");
+var myDocumentProxy = new DocumentProxy("MyDocument.pdf");
 Console.WriteLine("Document proxy constructed.");
 myDocumentProxy.DisplayDocument();
 
@@ -17,14 +18,15 @@ Console.WriteLine();
 
 // with chained proxy
 Console.WriteLine("Constructing protected document proxy.");
-var myProtectedDocumentProxy = new Proxy.ProtectedDocumentProxy("MyDocument.pdf", "Viewer");
+var myProtectedDocumentProxy = new ProtectedDocumentProxy("MyDocument.pdf", "Viewer");
 Console.WriteLine("Protected document proxy constructed.");
 myProtectedDocumentProxy.DisplayDocument();
 
 Console.WriteLine();
 
-// with chained proxy, no access
+// with chained proxy, no access: this last call throws an
+// UnauthorizedAccessException on purpose
 Console.WriteLine("Constructing protected document proxy.");
-myProtectedDocumentProxy = new Proxy.ProtectedDocumentProxy("MyDocument.pdf", "AnotherRole");
+myProtectedDocumentProxy = new ProtectedDocumentProxy("MyDocument.pdf", "AnotherRole");
 Console.WriteLine("Protected document proxy constructed.");
 myProtectedDocumentProxy.DisplayDocument();

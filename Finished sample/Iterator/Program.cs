@@ -1,20 +1,22 @@
 ﻿using Iterator;
 
 // create the collection
-PeopleCollection people = new PeopleCollection();
-people.Add(new Person("Kevin Dockx", "Belgium"));
-people.Add(new Person("Gill Cleeren", "Belgium"));
-people.Add(new Person("Roland Guijt", "The Netherlands"));
-people.Add(new Person("Thomas Claudius Huber", "Germany"));
+var people = new PeopleCollection
+{
+    new Person("Kevin Dockx", "Belgium"),
+    new Person("Gill Cleeren", "Belgium"),
+    new Person("Roland Guijt", "The Netherlands"),
+    new Person("Thomas Claudius Huber", "Germany")
+};
 
-// create the interator
+// create the iterator
 var peopleIterator = people.CreateIterator();
 
 // use the iterator to run through the people
-// in the collection; they should come out 
+// in the collection; they should come out
 // in alphabetical order
 for (Person? person = peopleIterator.First();
-    !peopleIterator.IsDone; 
+    !peopleIterator.IsDone;
     person = peopleIterator.Next())
 {
     Console.WriteLine(person?.Name);

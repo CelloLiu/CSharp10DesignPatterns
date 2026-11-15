@@ -1,104 +1,67 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Decorator: add behavior to an object by wrapping it in another object
+// with the same interface, instead of changing or subclassing it.
+namespace Decorator;
 
-namespace Decorator
+/// <summary>Component</summary>
+public interface IMailService
 {
-    /// <summary>
-    /// ConcreteComponent1
-    /// </summary>
-    public class CloudMailService : IMailService
+    bool SendMail(string message);
+}
+
+/// <summary>ConcreteComponent</summary>
+public class CloudMailService : IMailService
+{
+    public bool SendMail(string message)
     {
-        public bool SendMail(string message)
-        {
-            Console.WriteLine($"Message \"{message}\" sent via {nameof(CloudMailService)}.");
-            return true;
-        }
+        Console.WriteLine($"Message \"{message}\" sent via {nameof(CloudMailService)}.");
+        return true;
     }
+}
 
-    /// <summary>
-    /// ConcreteComponent2
-    /// </summary>
-    public class OnPremiseMailService : IMailService
+/// <summary>ConcreteComponent</summary>
+public class OnPremiseMailService : IMailService
+{
+    public bool SendMail(string message)
     {
-        public bool SendMail(string message)
-        {
-            Console.WriteLine($"Message \"{message}\" sent via {nameof(OnPremiseMailService)}.");
-            return true;
-        }
+        Console.WriteLine($"Message \"{message}\" sent via {nameof(OnPremiseMailService)}.");
+        return true;
     }
+}
 
-    /// <summary>
-    /// Component (as interface)
-    /// </summary>
-    public interface IMailService
+/// <summary>
+/// Decorator: wraps a mail service and by default just passes the call on to it.
+/// </summary>
+public abstract class MailServiceDecoratorBase(IMailService mailService) : IMailService
+{
+    public virtual bool SendMail(string message) => mailService.SendMail(message);
+}
+
+/// <summary>ConcreteDecorator: adds statistics BEFORE sending</summary>
+public class StatisticsDecorator(IMailService mailService) : MailServiceDecoratorBase(mailService)
+{
+    public override bool SendMail(string message)
     {
-        bool SendMail(string message);
+        // Fake collecting statistics
+        Console.WriteLine($"Collecting statistics in {nameof(StatisticsDecorator)}.");
+        return base.SendMail(message);
     }
+}
 
+/// <summary>ConcreteDecorator: stores the message AFTER sending</summary>
+public class MessageDatabaseDecorator(IMailService mailService) : MailServiceDecoratorBase(mailService)
+{
+    /// <summary>A list of sent messages - a "fake" database</summary>
+    public List<string> SentMessages { get; } = [];
 
-    /// <summary>
-    /// Decorator (as abstract base class)
-    /// </summary>
-    public abstract class MailServiceDecoratorBase : IMailService
+    public override bool SendMail(string message)
     {
-        private readonly IMailService _mailService;
-        public MailServiceDecoratorBase(IMailService mailService)
+        var wasSent = base.SendMail(message);
+        if (wasSent)
         {
-            _mailService = mailService;
+            // store sent message
+            SentMessages.Add(message);
         }
 
-        public virtual bool SendMail(string message)
-        {
-            return _mailService.SendMail(message);
-        }
-    }
-
-    /// <summary>
-    /// ConcreteDecorator1
-    /// </summary>
-    public class StatisticsDecorator : MailServiceDecoratorBase
-    {
-        public StatisticsDecorator(IMailService mailService) 
-            : base(mailService)
-        {
-        }
-
-        public override bool SendMail(string message)
-        {
-            // Fake collecting statistics 
-            Console.WriteLine($"Collecting statistics in {nameof(StatisticsDecorator)}.");
-            return base.SendMail(message);
-        }
-    }
-
-    /// <summary>
-    /// ConcreteDecorator2
-    /// </summary>
-    public class MessageDatabaseDecorator : MailServiceDecoratorBase
-    {
-        /// <summary>
-        /// A list of sent messages - a "fake" database
-        /// </summary>
-        public List<string> SentMessages { get; private set; } = new List<string>();
-
-        public MessageDatabaseDecorator(IMailService mailService)
-            : base(mailService)
-        {
-        }
-
-        public override bool SendMail(string message)
-        {
-            if (base.SendMail(message))
-            {
-                // store sent message
-                SentMessages.Add(message);
-                return true;
-            };
-
-            return false;
-        }
+        return wasSent;
     }
 }

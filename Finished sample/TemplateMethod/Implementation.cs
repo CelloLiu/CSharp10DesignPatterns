@@ -1,67 +1,52 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Template Method: a base class fixes the steps of an algorithm and their
+// order, and subclasses fill in or replace individual steps.
+namespace TemplateMethod;
 
-namespace TemplateMethod
-{ 
+/// <summary>AbstractClass</summary>
+public abstract class MailParser
+{
     /// <summary>
-    /// AbstractClass
+    /// Template method: the fixed order of the steps. Subclasses can't change it.
     /// </summary>
-    public abstract class MailParser
+    public string ParseMailBody(string identifier)
     {
-        public virtual void FindServer()
-        {
-            Console.WriteLine("Finding server...");
-        }
-
-        public abstract void AuthenticateToServer();
- 
-
-        public virtual string ParseHtmlMailBody(string identifier)
-        {
-            Console.WriteLine("Parsing HTML mail body...");
-            return $"This is the body of mail with id {identifier}";
-        }
-
-        /// <summary>
-        /// Template method
-        /// </summary> 
-        public string ParseMailBody(string identifier)
-        {
-            Console.WriteLine("Parsing mail body (in template method)...");
-            FindServer();
-            AuthenticateToServer();
-            return ParseHtmlMailBody(identifier);
-        }
+        Console.WriteLine("Parsing mail body (in template method)...");
+        FindServer();
+        AuthenticateToServer();
+        return ParseHtmlMailBody(identifier);
     }
 
-    public class ExchangeMailParser : MailParser
-    {
-        public override void AuthenticateToServer()
-        {
-            Console.WriteLine("Connecting to Exchange");
-        }
-    }
+    // a step with a default implementation: subclasses MAY override it
+    public virtual void FindServer() => Console.WriteLine("Finding server...");
 
-    public class ApacheMailParser : MailParser
-    {
-        public override void AuthenticateToServer()
-        {
-            Console.WriteLine("Connecting to Apache");
-        }
-    }
+    // a step without an implementation: subclasses MUST provide it
+    public abstract void AuthenticateToServer();
 
-    public class EudoraMailParser : MailParser
+    // a step with a default implementation: subclasses MAY override it
+    public virtual string ParseHtmlMailBody(string identifier)
     {
-        public override void FindServer()
-        {
-            Console.WriteLine("Finding Eudora server through a custom algorithm...");
-        }
-        public override void AuthenticateToServer()
-        {
-            Console.WriteLine("Connecting to Eudora");
-        }
+        Console.WriteLine("Parsing HTML mail body...");
+        return $"This is the body of mail with id {identifier}";
     }
+}
+
+/// <summary>ConcreteClass</summary>
+public class ExchangeMailParser : MailParser
+{
+    public override void AuthenticateToServer() => Console.WriteLine("Connecting to Exchange");
+}
+
+/// <summary>ConcreteClass</summary>
+public class ApacheMailParser : MailParser
+{
+    public override void AuthenticateToServer() => Console.WriteLine("Connecting to Apache");
+}
+
+/// <summary>ConcreteClass: also replaces the optional FindServer step</summary>
+public class EudoraMailParser : MailParser
+{
+    public override void FindServer() =>
+        Console.WriteLine("Finding Eudora server through a custom algorithm...");
+
+    public override void AuthenticateToServer() => Console.WriteLine("Connecting to Eudora");
 }

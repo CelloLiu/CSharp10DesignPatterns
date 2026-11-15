@@ -1,101 +1,74 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Proxy: put a stand-in object in front of the real one to control access to it,
+// for example to delay expensive work or to check permissions first.
+namespace Proxy;
 
-namespace Proxy
+/// <summary>Subject</summary>
+public interface IDocument
 {
-    /// <summary>
-    /// RealSubject
-    /// </summary>
-    public class Document : IDocument
+    void DisplayDocument();
+}
+
+/// <summary>RealSubject: expensive to create</summary>
+public class Document : IDocument
+{
+    public string Title { get; }
+    public string Content { get; }
+    public int AuthorId { get; }
+    public DateTimeOffset LastAccessed { get; }
+
+    public Document(string fileName)
     {
-        public string? Title { get; private set; }
-        public string? Content { get; private set; }
-        public int AuthorId { get; private set; }
-        public DateTimeOffset LastAccessed { get; private set; }
-        private string _fileName; 
-         
-        public Document(string fileName)
-        {
-            _fileName = fileName;
-            LoadDocument(fileName);
-        }
+        Console.WriteLine("Executing expensive action: loading a file from disk");
+        // fake loading the file...
+        Thread.Sleep(1000);
 
-        private void LoadDocument(string fileName)
-        {
-            Console.WriteLine("Executing expensive action: loading a file from disk");
-            // fake loading...
-            Thread.Sleep(1000);
-
-            Title = "An expensive document";
-            Content = "Lots and lots of content";
-            AuthorId = 1;
-            LastAccessed = DateTimeOffset.UtcNow;
-        }
-
-        public void DisplayDocument()
-        {
-            Console.WriteLine($"Title: {Title}, Content: {Content}");
-        }
+        Title = "An expensive document";
+        Content = "Lots and lots of content";
+        AuthorId = 1;
+        LastAccessed = DateTimeOffset.UtcNow;
     }
 
-    /// <summary>
-    /// Subject
-    /// </summary>
-    public interface IDocument
+    public void DisplayDocument()
     {
-        void DisplayDocument();
+        Console.WriteLine($"Title: {Title}, Content: {Content}");
+    }
+}
+
+/// <summary>
+/// Proxy (virtual proxy): avoids creating the document until it is really needed.
+/// </summary>
+public class DocumentProxy : IDocument
+{
+    // Lazy<T> runs the code that creates the document the first time Value is used
+    private readonly Lazy<Document> _document;
+
+    public DocumentProxy(string fileName)
+    {
+        _document = new Lazy<Document>(() => new Document(fileName));
     }
 
-    /// <summary>
-    /// Proxy
-    /// </summary>
-    public class DocumentProxy : IDocument
+    public void DisplayDocument() => _document.Value.DisplayDocument();
+}
+
+/// <summary>
+/// Proxy (protection proxy): only lets users with the "Viewer" role through.
+/// It wraps the other proxy, which shows that proxies can be chained.
+/// </summary>
+public class ProtectedDocumentProxy(string fileName, string userRole) : IDocument
+{
+    private readonly DocumentProxy _documentProxy = new(fileName);
+
+    public void DisplayDocument()
     {
-        // avoid creating the document until we need it 
-        private Lazy<Document> _document;
-        private string _fileName;
+        Console.WriteLine($"Entering DisplayDocument in {nameof(ProtectedDocumentProxy)}.");
 
-        public DocumentProxy(string fileName)
+        if (userRole != "Viewer")
         {
-            _fileName = fileName;
-            _document = new Lazy<Document>(() => new Document(_fileName));
+            throw new UnauthorizedAccessException();
         }
 
-        public void DisplayDocument()
-        {
-            _document.Value.DisplayDocument();       
-        }
-    }
+        _documentProxy.DisplayDocument();
 
-    public class ProtectedDocumentProxy : IDocument
-    {
-        private string _fileName;
-        private string _userRole;
-        private DocumentProxy _documentProxy;
-
-        public ProtectedDocumentProxy(string fileName, 
-            string userRole)
-        {
-            _fileName = fileName;
-            _userRole = userRole;
-            _documentProxy = new DocumentProxy(_fileName);
-        }
-        
-        public void DisplayDocument()
-        {
-            Console.WriteLine($"Entering DisplayDocument in {nameof(ProtectedDocumentProxy)}.");
-
-            if (_userRole != "Viewer")
-            {
-                throw new UnauthorizedAccessException();
-            }
-
-            _documentProxy.DisplayDocument();
-
-            Console.WriteLine($"Exiting DisplayDocument in {nameof(ProtectedDocumentProxy)}.");
-        }
+        Console.WriteLine($"Exiting DisplayDocument in {nameof(ProtectedDocumentProxy)}.");
     }
 }

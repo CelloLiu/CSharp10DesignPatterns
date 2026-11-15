@@ -1,70 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// Adapter (class adapter): let two incompatible interfaces work together.
+// This variation INHERITS from the class it adapts.
+namespace Adapter.ClassAdapter;
 
-namespace Adapter.ClassAdapter
+// a city the way the external system describes it
+public record CityFromExternalSystem(string Name, string NickName, int Inhabitants);
+
+// a city the way our own application wants it
+public record City(string FullName, long Inhabitants);
+
+/// <summary>Adaptee: the existing class with the "wrong" interface</summary>
+public class ExternalSystem
 {
-    public class CityFromExternalSystem
+    public CityFromExternalSystem GetCity() => new("Antwerp", "'t Stad", 500000);
+}
+
+/// <summary>Target: the interface our application expects</summary>
+public interface ICityAdapter
+{
+    City GetCity();
+}
+
+/// <summary>Adapter</summary>
+public class CityAdapter : ExternalSystem, ICityAdapter
+{
+    // "new" because this method intentionally hides ExternalSystem.GetCity()
+    public new City GetCity()
     {
-        public string Name { get; private set; }
-        public string NickName { get; private set; }
-        public int Inhabitants { get; private set; }
+        // call into the external system
+        var cityFromExternalSystem = base.GetCity();
 
-        public CityFromExternalSystem(string name, string nickName, int inhabitants)
-        {
-            Name = name;
-            NickName = nickName;
-            Inhabitants = inhabitants;
-        }
-    }
-
-    /// <summary>
-    /// Adaptee
-    /// </summary>
-    public class ExternalSystem
-    {
-        public CityFromExternalSystem GetCity()
-        {
-            return new CityFromExternalSystem("Antwerp", "'t Stad", 500000);
-        }
-    }
-
-    public class City
-    {
-        public string FullName { get; private set; }
-        public long Inhabitants { get; private set; }
-
-        public City(string fullName, long inhabitants)
-        {
-            FullName = fullName;
-            Inhabitants = inhabitants;
-        }
-    }
-
-    /// <summary>
-    /// Target
-    /// </summary>
-    public interface ICityAdapter
-    {
-        City GetCity();
-    }
-
-    /// <summary>
-    /// Adapter
-    /// </summary>
-    public class CityAdapter : ExternalSystem, ICityAdapter
-    { 
-        public new City GetCity()
-        {
-            // call into the external system 
-            var cityFromExternalSystem = base.GetCity();
-
-            // adapt the CityFromExternalCity to a City 
-            return new City(
-                $"{cityFromExternalSystem.Name} - {cityFromExternalSystem.NickName}"
-                , cityFromExternalSystem.Inhabitants);
-        }
+        // adapt the CityFromExternalSystem to a City
+        return new City(
+            $"{cityFromExternalSystem.Name} - {cityFromExternalSystem.NickName}",
+            cityFromExternalSystem.Inhabitants);
     }
 }

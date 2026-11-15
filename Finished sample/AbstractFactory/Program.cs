@@ -1,11 +1,10 @@
 ﻿using AbstractFactory;
 
-var belgiumShoppingCartPurchaseFactory = new BelgiumShoppingCartPurchaseFactory();
-var shoppingCartForBelgium = new ShoppingCart(belgiumShoppingCartPurchaseFactory);
+// the same ShoppingCart code works for any country: only the factory differs
+var shoppingCartForBelgium = new ShoppingCart(new BelgiumShoppingCartPurchaseFactory());
 shoppingCartForBelgium.CalculateCosts();
 
-var franceShoppingCartPurchaseFactory = new FranceShoppingCartPurchaseFactory();
-var shoppingCartForFrance = new ShoppingCart(franceShoppingCartPurchaseFactory);
+var shoppingCartForFrance = new ShoppingCart(new FranceShoppingCartPurchaseFactory());
 shoppingCartForFrance.CalculateCosts();
- 
-Console.ReadKey(); 
+
+Console.ReadKey();
