@@ -5,6 +5,34 @@ namespace Observer;
 // the information sent along with a notification
 public record TicketChange(int ArtistId, int Amount);
 
+/// <summary>Observer</summary>
+public interface ITicketChangeListener
+{
+    void ReceiveTicketChangeNotification(TicketChange ticketChange);
+}
+
+/// <summary>ConcreteObserver</summary>
+public class TicketResellerService : ITicketChangeListener
+{
+    public void ReceiveTicketChangeNotification(TicketChange ticketChange)
+    {
+        // update local datastore (datastore omitted in demo implementation)
+        Console.WriteLine($"{nameof(TicketResellerService)} notified " +
+            $"of ticket change: artist {ticketChange.ArtistId}, amount {ticketChange.Amount}");
+    }
+}
+
+/// <summary>ConcreteObserver</summary>
+public class TicketStockService : ITicketChangeListener
+{
+    public void ReceiveTicketChangeNotification(TicketChange ticketChange)
+    {
+        // update local datastore (datastore omitted in demo implementation)
+        Console.WriteLine($"{nameof(TicketStockService)} notified " +
+            $"of ticket change: artist {ticketChange.ArtistId}, amount {ticketChange.Amount}");
+    }
+}
+
 /// <summary>Subject: keeps the list of observers and notifies them</summary>
 public abstract class TicketChangeNotifier
 {
@@ -33,33 +61,5 @@ public class OrderService : TicketChangeNotifier
         // notify observers
         Console.WriteLine($"{nameof(OrderService)} is notifying observers...");
         Notify(new TicketChange(artistId, amount));
-    }
-}
-
-/// <summary>Observer</summary>
-public interface ITicketChangeListener
-{
-    void ReceiveTicketChangeNotification(TicketChange ticketChange);
-}
-
-/// <summary>ConcreteObserver</summary>
-public class TicketResellerService : ITicketChangeListener
-{
-    public void ReceiveTicketChangeNotification(TicketChange ticketChange)
-    {
-        // update local datastore (datastore omitted in demo implementation)
-        Console.WriteLine($"{nameof(TicketResellerService)} notified " +
-            $"of ticket change: artist {ticketChange.ArtistId}, amount {ticketChange.Amount}");
-    }
-}
-
-/// <summary>ConcreteObserver</summary>
-public class TicketStockService : ITicketChangeListener
-{
-    public void ReceiveTicketChangeNotification(TicketChange ticketChange)
-    {
-        // update local datastore (datastore omitted in demo implementation)
-        Console.WriteLine($"{nameof(TicketStockService)} notified " +
-            $"of ticket change: artist {ticketChange.ArtistId}, amount {ticketChange.Amount}");
     }
 }
