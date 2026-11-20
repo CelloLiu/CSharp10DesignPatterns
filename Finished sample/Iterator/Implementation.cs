@@ -11,21 +11,26 @@ public class Person(string name, string country)
 /// <summary>Iterator</summary>
 public interface IPeopleIterator
 {
-    Person First();
+    // returns null when the collection is empty
+    Person? First();
     // returns null when there is no next person
     Person? Next();
     bool IsDone { get; }
-    Person CurrentItem { get; }
+    Person? CurrentItem { get; }
 }
 
 /// <summary>ConcreteIterator: goes through the people in alphabetical order</summary>
 public class PeopleIterator(PeopleCollection collection) : IPeopleIterator
 {
-    // the position of the current person in the sorted collection
-    private int _current = 0;
+    // sorted once per pass (populated in First) instead of re-sorting on every step
+    private List<Person> _sortedPeople = [];
 
-    public Person First()
+    // the position of the current person in the sorted collection
+    private int _current;
+
+    public Person? First()
     {
+        _sortedPeople = [.. collection.OrderBy(p => p.Name)];
         _current = 0;
         return CurrentItem;
     }
@@ -33,12 +38,12 @@ public class PeopleIterator(PeopleCollection collection) : IPeopleIterator
     public Person? Next()
     {
         _current++;
-        return IsDone ? null : CurrentItem;
+        return CurrentItem;
     }
 
-    public bool IsDone => _current >= collection.Count;
+    public bool IsDone => _current >= _sortedPeople.Count;
 
-    public Person CurrentItem => collection.OrderBy(p => p.Name).ElementAt(_current);
+    public Person? CurrentItem => IsDone ? null : _sortedPeople[_current];
 }
 
 /// <summary>Aggregate</summary>

@@ -6,5 +6,3 @@ shoppingCartForBelgium.CalculateCosts();
 
 var shoppingCartForFrance = new ShoppingCart(new FranceShoppingCartPurchaseFactory());
 shoppingCartForFrance.CalculateCosts();
-
-Console.ReadKey();

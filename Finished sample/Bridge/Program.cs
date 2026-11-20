@@ -15,5 +15,3 @@ Console.WriteLine($"Vegetarian menu, no coupon: {vegetarianMenu.CalculatePrice()
 
 vegetarianMenu = new VegetarianMenu(oneEuroCoupon);
 Console.WriteLine($"Vegetarian menu, one euro coupon: {vegetarianMenu.CalculatePrice()} euro.");
-
-Console.ReadKey();

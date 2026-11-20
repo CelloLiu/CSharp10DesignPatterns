@@ -22,5 +22,3 @@ foreach (var message in messageDatabaseDecorator.SentMessages)
 {
     Console.WriteLine($"Stored message: \"{message}\"");
 }
-
-Console.ReadKey();

@@ -46,7 +46,7 @@ public class Employee(string name, int yearsEmployed) : IElement
 /// <summary>ConcreteVisitor</summary>
 public class DiscountVisitor : IVisitor
 {
-    public decimal TotalDiscountGiven { get; set; }
+    public decimal TotalDiscountGiven { get; private set; }
 
     // pick the right method for the kind of element being visited
     public void Visit(IElement element)

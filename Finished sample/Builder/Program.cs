@@ -15,5 +15,3 @@ garage.Construct(bmwBuilder);
 Console.WriteLine(bmwBuilder.Car.ToString());
 // or:
 garage.Show();
-
-Console.ReadKey();

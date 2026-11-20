@@ -65,14 +65,14 @@ public class FranceShoppingCartPurchaseFactory : IShoppingCartPurchaseFactory
 public class ShoppingCart(IShoppingCartPurchaseFactory factory)
 {
     // assume that the total cost of all the items we ordered = 200 euro
-    private const int OrderCosts = 200;
+    private const decimal OrderCosts = 200m;
 
     private readonly IDiscountService _discountService = factory.CreateDiscountService();
     private readonly IShippingCostsService _shippingCostsService = factory.CreateShippingCostsService();
 
     public void CalculateCosts()
     {
-        var discount = OrderCosts / 100 * _discountService.DiscountPercentage;
+        var discount = OrderCosts * _discountService.DiscountPercentage / 100m;
         var totalCosts = OrderCosts - discount + _shippingCostsService.ShippingCosts;
 
         Console.WriteLine($"Total costs = {totalCosts}");

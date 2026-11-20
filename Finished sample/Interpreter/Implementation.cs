@@ -40,20 +40,20 @@ public abstract class RomanExpression
 /// <summary>TerminalExpression: translates 1 to 9</summary>
 public class RomanOneExpression : RomanExpression
 {
-    protected override (int Value, string Numeral)[] Numerals =>
+    protected override (int Value, string Numeral)[] Numerals { get; } =
         [(9, "IX"), (5, "V"), (4, "IV"), (1, "I")];
 }
 
 /// <summary>TerminalExpression: translates 10 to 90</summary>
 public class RomanTenExpression : RomanExpression
 {
-    protected override (int Value, string Numeral)[] Numerals =>
+    protected override (int Value, string Numeral)[] Numerals { get; } =
         [(90, "XC"), (50, "L"), (40, "XL"), (10, "X")];
 }
 
 /// <summary>TerminalExpression: translates 100 to 900</summary>
 public class RomanHundredExpression : RomanExpression
 {
-    protected override (int Value, string Numeral)[] Numerals =>
+    protected override (int Value, string Numeral)[] Numerals { get; } =
         [(900, "CM"), (500, "D"), (400, "CD"), (100, "C")];
 }

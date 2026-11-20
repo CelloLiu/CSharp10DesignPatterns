@@ -3,7 +3,7 @@
 namespace Singleton;
 
 /// <summary>Singleton</summary>
-public class Logger
+public sealed class Logger
 {
     // Lazy<T> creates the instance the first time it is asked for, and is thread-safe
     private static readonly Lazy<Logger> _lazyLogger = new(() => new Logger());

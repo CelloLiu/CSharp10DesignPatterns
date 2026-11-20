@@ -18,7 +18,7 @@ public class Document : IDocument
 
     public Document(string fileName)
     {
-        Console.WriteLine("Executing expensive action: loading a file from disk");
+        Console.WriteLine($"Executing expensive action: loading '{fileName}' from disk");
         // fake loading the file...
         Thread.Sleep(1000);
 
@@ -37,15 +37,10 @@ public class Document : IDocument
 /// <summary>
 /// Proxy (virtual proxy): avoids creating the document until it is really needed.
 /// </summary>
-public class DocumentProxy : IDocument
+public class DocumentProxy(string fileName) : IDocument
 {
     // Lazy<T> runs the code that creates the document the first time Value is used
-    private readonly Lazy<Document> _document;
-
-    public DocumentProxy(string fileName)
-    {
-        _document = new Lazy<Document>(() => new Document(fileName));
-    }
+    private readonly Lazy<Document> _document = new(() => new Document(fileName));
 
     public void DisplayDocument() => _document.Value.DisplayDocument();
 }

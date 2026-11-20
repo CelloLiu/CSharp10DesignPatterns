@@ -62,7 +62,7 @@ public class AccountManager(string name) : TeamMember(name)
 public class TeamChatRoom : IChatRoom
 {
     // the registered team members, by name
-    private readonly Dictionary<string, TeamMember> _teamMembers = new();
+    private readonly Dictionary<string, TeamMember> _teamMembers = [];
 
     public void Register(TeamMember teamMember)
     {
@@ -81,7 +81,14 @@ public class TeamChatRoom : IChatRoom
 
     public void Send(string from, string to, string message)
     {
-        _teamMembers[to].Receive(from, message);
+        if (_teamMembers.TryGetValue(to, out var teamMember))
+        {
+            teamMember.Receive(from, message);
+        }
+        else
+        {
+            Console.WriteLine($"No team member named '{to}' is registered in the chat room.");
+        }
     }
 
     public void SendTo<T>(string from, string message) where T : TeamMember

@@ -60,7 +60,7 @@ public class DocumentTitleHandler : DocumentHandler
 {
     protected override void Validate(Document document)
     {
-        if (document.Title == string.Empty)
+        if (string.IsNullOrWhiteSpace(document.Title))
         {
             throw ValidationError("Title must be filled out", nameof(Document.Title));
         }

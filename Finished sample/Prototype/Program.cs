@@ -13,5 +13,3 @@ Console.WriteLine($"Employee was cloned: {employeeClone.Name}, with manager {emp
 // change the manager name: the deep clone has its own manager, so it still says Cindy
 manager.Name = "Karen";
 Console.WriteLine($"Employee was cloned: {employeeClone.Name}, with manager {employeeClone.Manager.Name}");
-
-Console.ReadKey();

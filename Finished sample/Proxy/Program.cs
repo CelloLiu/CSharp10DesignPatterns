@@ -24,9 +24,15 @@ myProtectedDocumentProxy.DisplayDocument();
 
 Console.WriteLine();
 
-// with chained proxy, no access: this last call throws an
-// UnauthorizedAccessException on purpose
+// with chained proxy, no access: the protection proxy blocks access
 Console.WriteLine("Constructing protected document proxy.");
 myProtectedDocumentProxy = new ProtectedDocumentProxy("MyDocument.pdf", "AnotherRole");
 Console.WriteLine("Protected document proxy constructed.");
-myProtectedDocumentProxy.DisplayDocument();
+try
+{
+    myProtectedDocumentProxy.DisplayDocument();
+}
+catch (UnauthorizedAccessException ex)
+{
+    Console.WriteLine($"Access denied: {ex.Message}");
+}

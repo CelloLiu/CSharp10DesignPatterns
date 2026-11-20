@@ -33,7 +33,7 @@ public class CharacterB : ICharacter
 /// <summary>FlyweightFactory: hands out shared characters</summary>
 public class CharacterFactory
 {
-    private readonly Dictionary<char, ICharacter> _characters = new();
+    private readonly Dictionary<char, ICharacter> _characters = [];
 
     public ICharacter? GetCharacter(char characterIdentifier)
     {
@@ -45,7 +45,6 @@ public class CharacterFactory
         }
 
         // The character isn't in the dictionary: create it, store it, return it.
-        Console.WriteLine("Character construction");
         ICharacter? newCharacter = characterIdentifier switch
         {
             'a' => new CharacterA(),
@@ -56,6 +55,7 @@ public class CharacterFactory
 
         if (newCharacter is not null)
         {
+            Console.WriteLine("Character construction");
             _characters[characterIdentifier] = newCharacter;
         }
 

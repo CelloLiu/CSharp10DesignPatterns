@@ -24,7 +24,5 @@ if (characterObject is not null)
     var paragraph = characterFactory.CreateParagraph([characterObject], 1);
 
     // draw the paragraph
-    paragraph.Draw("Lucinda", 12);
+    paragraph.Draw("Lucida", 12);
 }
-
-Console.ReadKey();

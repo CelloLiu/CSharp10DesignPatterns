@@ -18,5 +18,3 @@ topLevelDirectory2.Add(subLevelFile2);
 Console.WriteLine($"Size of topLevelDirectory1: {topLevelDirectory1.GetSize()}");
 Console.WriteLine($"Size of topLevelDirectory2: {topLevelDirectory2.GetSize()}");
 Console.WriteLine($"Size of root: {root.GetSize()}");
-
-Console.ReadKey();

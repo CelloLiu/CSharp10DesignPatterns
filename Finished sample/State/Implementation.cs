@@ -18,7 +18,7 @@ public class OverdrawnState(decimal balance, BankAccount bankAccount)
 {
     public override void Deposit(decimal amount)
     {
-        Console.WriteLine($"In {GetType()}, depositing {amount}");
+        Console.WriteLine($"In {GetType().Name}, depositing {amount}");
         Balance += amount;
         if (Balance >= 0)
         {
@@ -30,7 +30,7 @@ public class OverdrawnState(decimal balance, BankAccount bankAccount)
     public override void Withdraw(decimal amount)
     {
         // cannot withdraw
-        Console.WriteLine($"In {GetType()}, cannot withdraw, balance {Balance}");
+        Console.WriteLine($"In {GetType().Name}, cannot withdraw, balance {Balance}");
     }
 }
 
@@ -40,7 +40,7 @@ public class RegularState(decimal balance, BankAccount bankAccount)
 {
     public override void Deposit(decimal amount)
     {
-        Console.WriteLine($"In {GetType()}, depositing {amount}");
+        Console.WriteLine($"In {GetType().Name}, depositing {amount}");
         Balance += amount;
         if (Balance >= 1000)
         {
@@ -51,7 +51,7 @@ public class RegularState(decimal balance, BankAccount bankAccount)
 
     public override void Withdraw(decimal amount)
     {
-        Console.WriteLine($"In {GetType()}, withdrawing {amount} from {Balance}");
+        Console.WriteLine($"In {GetType().Name}, withdrawing {amount} from {Balance}");
         Balance -= amount;
         if (Balance < 0)
         {
@@ -67,13 +67,13 @@ public class GoldState(decimal balance, BankAccount bankAccount)
 {
     public override void Deposit(decimal amount)
     {
-        Console.WriteLine($"In {GetType()}, depositing {amount} + 10% bonus: {amount / 10}");
+        Console.WriteLine($"In {GetType().Name}, depositing {amount} + 10% bonus: {amount / 10}");
         Balance += amount + (amount / 10);
     }
 
     public override void Withdraw(decimal amount)
     {
-        Console.WriteLine($"In {GetType()}, withdrawing {amount} from {Balance}");
+        Console.WriteLine($"In {GetType().Name}, withdrawing {amount} from {Balance}");
         Balance -= amount;
         if (Balance < 0)
         {
