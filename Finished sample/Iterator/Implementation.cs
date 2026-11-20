@@ -22,11 +22,13 @@ public interface IPeopleIterator
 /// <summary>ConcreteIterator: goes through the people in alphabetical order</summary>
 public class PeopleIterator(PeopleCollection collection) : IPeopleIterator
 {
-    // sorted once per pass (populated in First) instead of re-sorting on every step
-    private List<Person> _sortedPeople = [];
+    // sorted lazily on first access (and refreshed in First) instead of on every step
+    private List<Person>? _sortedPeople;
 
     // the position of the current person in the sorted collection
     private int _current;
+
+    private List<Person> SortedPeople => _sortedPeople ??= [.. collection.OrderBy(p => p.Name)];
 
     public Person? First()
     {
@@ -41,9 +43,9 @@ public class PeopleIterator(PeopleCollection collection) : IPeopleIterator
         return CurrentItem;
     }
 
-    public bool IsDone => _current >= _sortedPeople.Count;
+    public bool IsDone => _current >= SortedPeople.Count;
 
-    public Person? CurrentItem => IsDone ? null : _sortedPeople[_current];
+    public Person? CurrentItem => IsDone ? null : SortedPeople[_current];
 }
 
 /// <summary>Aggregate</summary>
