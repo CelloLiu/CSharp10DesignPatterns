@@ -5,97 +5,75 @@ namespace Mediator;
 /// <summary>Mediator</summary>
 public interface IChatRoom
 {
-    void Register(TeamMember teamMember);
-    // to everyone
-    void Send(string from, string message);
-    // to one person
-    void Send(string from, string to, string message);
-    // to everyone of a certain type, e.g. all lawyers
-    void SendTo<T>(string from, string message) where T : TeamMember;
+    void Join(User user);
+    void Broadcast(User sender, string message);
+    void SendTo(User sender, string recipientName, string message);
 }
 
 /// <summary>
-/// Colleague: only knows the chat room, not the other team members.
+/// Colleague: only knows the chat room and never holds references to other users.
 /// </summary>
-public abstract class TeamMember(string name)
+public class User
 {
-    public string Name { get; set; } = name;
+    private readonly IChatRoom _chatRoom;
 
-    // set when the team member is registered in a chat room
-    private IChatRoom? _chatroom;
+    public string Name { get; }
 
-    internal void SetChatroom(IChatRoom chatRoom) => _chatroom = chatRoom;
-
-    public void Send(string message) => _chatroom?.Send(Name, message);
-
-    public void Send(string to, string message) => _chatroom?.Send(Name, to, message);
-
-    public void SendTo<T>(string message) where T : TeamMember => _chatroom?.SendTo<T>(Name, message);
-
-    public virtual void Receive(string from, string message)
+    public User(string name, IChatRoom chatRoom)
     {
-        Console.WriteLine($"message from {from} to {Name}: {message}");
+        Name = name;
+        _chatRoom = chatRoom;
+
+        // Kept in the constructor for simplicity here; in larger classes,
+        // prefer registering after construction so 'this' isn't exposed early.
+        _chatRoom.Join(this);
     }
+
+    public void Broadcast(string message) => _chatRoom.Broadcast(this, message);
+
+    public void SendTo(string recipientName, string message) =>
+        _chatRoom.SendTo(this, recipientName, message);
+
+    public void Receive(string from, string message) =>
+        Console.WriteLine($"[{Name}] received from {from}: {message}");
 }
 
-/// <summary>ConcreteColleague</summary>
-public class Lawyer(string name) : TeamMember(name)
+/// <summary>
+/// ConcreteMediator: the only object that knows who is in the chat room.
+/// </summary>
+public class ChatRoom : IChatRoom
 {
-    public override void Receive(string from, string message)
-    {
-        Console.Write($"{nameof(Lawyer)} {Name} received: ");
-        base.Receive(from, message);
-    }
-}
+    private readonly Dictionary<string, User> _users = [];
 
-/// <summary>ConcreteColleague</summary>
-public class AccountManager(string name) : TeamMember(name)
-{
-    public override void Receive(string from, string message)
+    public void Join(User user)
     {
-        Console.Write($"{nameof(AccountManager)} {Name} received: ");
-        base.Receive(from, message);
-    }
-}
-
-/// <summary>ConcreteMediator</summary>
-public class TeamChatRoom : IChatRoom
-{
-    // the registered team members, by name
-    private readonly Dictionary<string, TeamMember> _teamMembers = [];
-
-    public void Register(TeamMember teamMember)
-    {
-        teamMember.SetChatroom(this);
-        // TryAdd does nothing when the name is already registered
-        _teamMembers.TryAdd(teamMember.Name, teamMember);
-    }
-
-    public void Send(string from, string message)
-    {
-        foreach (var teamMember in _teamMembers.Values)
+        if (!_users.TryAdd(user.Name, user))
         {
-            teamMember.Receive(from, message);
+            throw new InvalidOperationException($"A user named '{user.Name}' is already in the chat room.");
         }
     }
 
-    public void Send(string from, string to, string message)
+    public void Broadcast(User sender, string message)
     {
-        if (_teamMembers.TryGetValue(to, out var teamMember))
+        // Deliver to everyone in the room except the sender
+        foreach (var user in _users.Values)
         {
-            teamMember.Receive(from, message);
+            if (user != sender)
+            {
+                user.Receive(sender.Name, message);
+            }
+        }
+    }
+
+    public void SendTo(User sender, string recipientName, string message)
+    {
+        if (_users.TryGetValue(recipientName, out var recipient))
+        {
+            recipient.Receive(sender.Name, message);
         }
         else
         {
-            Console.WriteLine($"No team member named '{to}' is registered in the chat room.");
-        }
-    }
-
-    public void SendTo<T>(string from, string message) where T : TeamMember
-    {
-        foreach (var teamMember in _teamMembers.Values.OfType<T>())
-        {
-            teamMember.Receive(from, message);
+            Console.WriteLine($"No user named '{recipientName}' is in the chat room.");
         }
     }
 }
