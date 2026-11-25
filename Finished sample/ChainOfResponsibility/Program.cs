@@ -1,27 +1,27 @@
 ﻿using ChainOfResponsibility;
-using System.ComponentModel.DataAnnotations;
 
-var validDocument = new Document("How to Avoid Java Development",
-    DateTimeOffset.UtcNow, true, true);
-// not approved by litigation
-var invalidDocument = new Document("How to Avoid Java Development",
-    DateTimeOffset.UtcNow, false, true);
+// Build the chain: Title -> LastModified -> Litigation -> Management
+var chain = new TitleHandler();
+chain
+    .SetNext(new LastModifiedHandler())
+    .SetNext(new LitigationApprovalHandler())
+    .SetNext(new ManagementApprovalHandler());
 
-// chain a set of handlers: title -> last modified -> litigation -> management
-var documentHandlerChain = new DocumentTitleHandler();
-documentHandlerChain
-    .SetSuccessor(new DocumentLastModifiedHandler())
-    .SetSuccessor(new DocumentApprovedByLitigationHandler())
-    .SetSuccessor(new DocumentApprovedByManagementHandler());
+var validDocument = new Document(
+    Title: "How to Avoid Java Development",
+    LastModified: DateTimeOffset.UtcNow,
+    ApprovedByLitigation: true,
+    ApprovedByManagement: true);
 
-try
+var invalidDocument = validDocument with { ApprovedByLitigation = false };
+
+Check(validDocument);
+Check(invalidDocument);
+
+void Check(Document document)
 {
-    documentHandlerChain.Handle(validDocument);
-    Console.WriteLine("Valid document is valid.");
-    documentHandlerChain.Handle(invalidDocument);
-    Console.WriteLine("Invalid document is valid.");
-}
-catch (ValidationException validationException)
-{
-    Console.WriteLine(validationException.Message);
+    var error = chain.Handle(document);
+    Console.WriteLine(error is null
+        ? $"Approved: '{document.Title}' passed all checks."
+        : $"Rejected: {error}");
 }
