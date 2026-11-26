@@ -1,24 +1,28 @@
 ﻿using Memento;
 
-CommandManager commandManager = new();
-IEmployeeManagerRepository repository = new EmployeeManagerRepository();
+var player = new Player();
+var saveManager = new SaveManager();
 
-commandManager.Invoke(new AddEmployeeToManagerList(repository, 1, new Employee(111, "Kevin")));
-repository.WriteDataStore();
+// Save checkpoint 1 at the start
+saveManager.Save(player.Save());
+Console.WriteLine($"Start:       {player}");
 
-// undo the last command
-commandManager.Undo();
-repository.WriteDataStore();
+// Reach Level 2 and save checkpoint 2
+player.Play(nextLevel: 2, healthLost: 10, coinsFound: 50);
+saveManager.Save(player.Save());
+Console.WriteLine($"Level 2:     {player}");
 
-commandManager.Invoke(new AddEmployeeToManagerList(repository, 1, new Employee(222, "Clara")));
-repository.WriteDataStore();
+// Enter the boss fight and lose all health
+player.Play(nextLevel: 3, healthLost: 90, coinsFound: 10);
+Console.WriteLine($"Boss fight:  {player}");
 
-commandManager.Invoke(new AddEmployeeToManagerList(repository, 2, new Employee(333, "Tom")));
-repository.WriteDataStore();
+// Load the last checkpoint (Level 2)
+player.Restore(saveManager.LoadLast());
+Console.WriteLine($"Restored 1:  {player}");
 
-// try adding the same employee again: CanExecute() blocks it
-commandManager.Invoke(new AddEmployeeToManagerList(repository, 2, new Employee(333, "Tom")));
-repository.WriteDataStore();
+// Load the earlier checkpoint (Start)
+player.Restore(saveManager.LoadLast());
+Console.WriteLine($"Restored 2:  {player}");
 
-commandManager.UndoAll();
-repository.WriteDataStore();
+// Try loading again when no checkpoints are left
+player.Restore(saveManager.LoadLast());
