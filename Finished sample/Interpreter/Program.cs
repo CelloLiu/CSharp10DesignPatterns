@@ -1,25 +1,15 @@
 ﻿using Interpreter;
 
-// the order matters: hundreds first, then tens, then ones
-List<RomanExpression> expressions =
-[
-    new RomanHundredExpression(),
-    new RomanTenExpression(),
-    new RomanOneExpression()
-];
+// Build the expression tree for: (x + 5) - y
+IExpression expression = new SubtractExpression(
+    new AddExpression(
+        new VariableExpression("x"),
+        new NumberExpression(5)),
+    new VariableExpression("y"));
 
-Translate(5);
-Translate(81);
-Translate(733);
+// Evaluate the same expression tree with different variable values
+var context1 = new Context(new Dictionary<string, int> { ["x"] = 10, ["y"] = 3 });
+Console.WriteLine($"(x + 5) - y with x=10, y=3 => {expression.Interpret(context1)}");
 
-// let every expression interpret its part of the number
-void Translate(int number)
-{
-    var context = new RomanContext(number);
-    foreach (var expression in expressions)
-    {
-        expression.Interpret(context);
-    }
-
-    Console.WriteLine($"Translating Arabic numerals to Roman numerals: {number} = {context.Output}");
-}
+var context2 = new Context(new Dictionary<string, int> { ["x"] = 20, ["y"] = 8 });
+Console.WriteLine($"(x + 5) - y with x=20, y=8 => {expression.Interpret(context2)}");

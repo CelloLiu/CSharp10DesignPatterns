@@ -1,59 +1,47 @@
-﻿// Interpreter: describe a simple language as a set of small expression classes,
-// and let each one interpret its own piece of the input.
-// Here the "language" is Roman numerals: each expression translates one digit
-// position (hundreds, tens or ones) of a number.
+﻿// Interpreter: represent a small language (here, simple math like "(x + 5) - y")
+// as a tree of expression objects, and evaluate it by calling Interpret() on the root.
+// Note: Interpreter evaluates an already-built tree; parsing raw text into that tree
+// is a separate step.
 namespace Interpreter;
 
-/// <summary>
-/// Context: the number still to translate (Input) and the result so far (Output).
-/// </summary>
-public class RomanContext(int input)
+/// <summary>Context: holds variable values used while interpreting an expression</summary>
+public class Context(IReadOnlyDictionary<string, int> variables)
 {
-    public int Input { get; set; } = input;
-    public string Output { get; set; } = string.Empty;
+    public int GetValue(string name) =>
+        variables.TryGetValue(name, out var value)
+            ? value
+            : throw new KeyNotFoundException($"Variable '{name}' is not defined.");
 }
 
 /// <summary>AbstractExpression</summary>
-public abstract class RomanExpression
+public interface IExpression
 {
-    // The numerals this expression knows, from the largest value to the smallest.
-    // Four of them are enough for one digit position, e.g. for the ones:
-    // 9 = IX, 5 = V, 4 = IV and 1 = I. Everything else is a combination of those
-    // (8 = V + I + I + I = VIII, 6 = V + I = VI, 3 = I + I + I = III, ...).
-    protected abstract (int Value, string Numeral)[] Numerals { get; }
-
-    public void Interpret(RomanContext context)
-    {
-        foreach (var (value, numeral) in Numerals)
-        {
-            // as long as the value still fits in the input: write the numeral
-            // and take the value off the input
-            while (context.Input >= value)
-            {
-                context.Output += numeral;
-                context.Input -= value;
-            }
-        }
-    }
+    int Interpret(Context context);
 }
 
-/// <summary>TerminalExpression: translates 1 to 9</summary>
-public class RomanOneExpression : RomanExpression
+/// <summary>TerminalExpression: a literal number (e.g., 5)</summary>
+public class NumberExpression(int value) : IExpression
 {
-    protected override (int Value, string Numeral)[] Numerals { get; } =
-        [(9, "IX"), (5, "V"), (4, "IV"), (1, "I")];
+    public int Interpret(Context context) => value;
 }
 
-/// <summary>TerminalExpression: translates 10 to 90</summary>
-public class RomanTenExpression : RomanExpression
+/// <summary>TerminalExpression: a variable looked up in the context (e.g., x)</summary>
+public class VariableExpression(string name) : IExpression
 {
-    protected override (int Value, string Numeral)[] Numerals { get; } =
-        [(90, "XC"), (50, "L"), (40, "XL"), (10, "X")];
+    public int Interpret(Context context) => context.GetValue(name);
 }
 
-/// <summary>TerminalExpression: translates 100 to 900</summary>
-public class RomanHundredExpression : RomanExpression
+/// <summary>NonTerminalExpression: adds two child expressions (left + right)</summary>
+public class AddExpression(IExpression left, IExpression right) : IExpression
 {
-    protected override (int Value, string Numeral)[] Numerals { get; } =
-        [(900, "CM"), (500, "D"), (400, "CD"), (100, "C")];
+    // A non-terminal asks its children to interpret themselves, then combines the results
+    public int Interpret(Context context) =>
+        left.Interpret(context) + right.Interpret(context);
+}
+
+/// <summary>NonTerminalExpression: subtracts two child expressions (left - right)</summary>
+public class SubtractExpression(IExpression left, IExpression right) : IExpression
+{
+    public int Interpret(Context context) =>
+        left.Interpret(context) - right.Interpret(context);
 }
