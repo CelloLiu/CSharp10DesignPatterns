@@ -1,12 +1,15 @@
-﻿// Visitor: add a new operation (here: calculating discounts) to a set of classes
-// without changing those classes. The operation lives in a separate visitor
-// object that the classes "accept".
+﻿// Visitor: add new operations to a set of element classes without modifying them.
+// Each element "accepts" a visitor and calls the Visit overload matching its own
+// concrete type (double dispatch).
+// Trade-off: adding a new visitor (operation) is easy, but adding a new element
+// type means updating IVisitor and every concrete visitor.
 namespace Visitor;
 
-/// <summary>Visitor</summary>
+/// <summary>Visitor: declares a Visit method for each concrete element type</summary>
 public interface IVisitor
 {
-    void Visit(IElement element);
+    void Visit(Customer customer);
+    void Visit(Employee employee);
 }
 
 /// <summary>Element</summary>
@@ -20,13 +23,9 @@ public class Customer(string name, decimal amountOrdered) : IElement
 {
     public string Name { get; } = name;
     public decimal AmountOrdered { get; } = amountOrdered;
-    public decimal Discount { get; set; }
 
-    public void Accept(IVisitor visitor)
-    {
-        visitor.Visit(this);
-        Console.WriteLine($"Visited {nameof(Customer)} {Name}, discount given: {Discount}");
-    }
+    // Double dispatch: inside Customer, 'this' has its real type, so the right Visit overload is chosen
+    public void Accept(IVisitor visitor) => visitor.Visit(this);
 }
 
 /// <summary>ConcreteElement</summary>
@@ -34,70 +33,40 @@ public class Employee(string name, int yearsEmployed) : IElement
 {
     public string Name { get; } = name;
     public int YearsEmployed { get; } = yearsEmployed;
-    public decimal Discount { get; set; }
 
-    public void Accept(IVisitor visitor)
-    {
-        visitor.Visit(this);
-        Console.WriteLine($"Visited {nameof(Employee)} {Name}, discount given: {Discount}");
-    }
+    // Double dispatch: inside Employee, 'this' has its real type, so the right Visit overload is chosen
+    public void Accept(IVisitor visitor) => visitor.Visit(this);
 }
 
-/// <summary>ConcreteVisitor</summary>
+/// <summary>ConcreteVisitor: calculates discounts without changing Customer or Employee</summary>
 public class DiscountVisitor : IVisitor
 {
-    public decimal TotalDiscountGiven { get; private set; }
+    // Visitors can hold state across Visit calls (here, a running total)
+    public decimal TotalDiscount { get; private set; }
 
-    // pick the right method for the kind of element being visited
-    public void Visit(IElement element)
+    public void Visit(Customer customer)
     {
-        switch (element)
-        {
-            case Customer customer:
-                VisitCustomer(customer);
-                break;
-            case Employee employee:
-                VisitEmployee(employee);
-                break;
-        }
-    }
-
-    private void VisitCustomer(Customer customer)
-    {
-        // percentage of total amount
+        // Customer rule: 10% of the order amount
         var discount = customer.AmountOrdered / 10;
-        // set it on the customer
-        customer.Discount = discount;
-        // add it to the total amount
-        TotalDiscountGiven += discount;
+        TotalDiscount += discount;
+        Console.WriteLine($"Customer {customer.Name}: discount = {discount}");
     }
 
-    private void VisitEmployee(Employee employee)
+    public void Visit(Employee employee)
     {
-        // fixed value depending on the amount of years employed
-        var discount = employee.YearsEmployed < 10 ? 100 : 200;
-        // set it on the employee
-        employee.Discount = discount;
-        // add it to the total amount
-        TotalDiscountGiven += discount;
+        // Employee rule: 100 for under 10 years employed, 200 for 10+ years
+        decimal discount = employee.YearsEmployed < 10 ? 100m : 200m;
+        TotalDiscount += discount;
+        Console.WriteLine($"Employee {employee.Name}: discount = {discount}");
     }
 }
 
-/// <summary>ObjectStructure: the collection of elements a visitor is sent through</summary>
-public class Container
+/// <summary>ConcreteVisitor: a second operation added without touching the element classes</summary>
+public class SummaryVisitor : IVisitor
 {
-    public List<Employee> Employees { get; } = [];
-    public List<Customer> Customers { get; } = [];
+    public void Visit(Customer customer) =>
+        Console.WriteLine($"Customer: {customer.Name} (ordered {customer.AmountOrdered})");
 
-    public void Accept(IVisitor visitor)
-    {
-        foreach (var employee in Employees)
-        {
-            employee.Accept(visitor);
-        }
-        foreach (var customer in Customers)
-        {
-            customer.Accept(visitor);
-        }
-    }
+    public void Visit(Employee employee) =>
+        Console.WriteLine($"Employee: {employee.Name} ({employee.YearsEmployed} years)");
 }
