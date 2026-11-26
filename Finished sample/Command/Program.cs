@@ -1,24 +1,23 @@
 ﻿using Command;
 
-CommandManager commandManager = new();
-IEmployeeManagerRepository repository = new EmployeeManagerRepository();
+var editor = new TextEditor();
+var history = new CommandHistory();
 
-commandManager.Invoke(new AddEmployeeToManagerList(repository, 1, new Employee(111, "Kevin")));
-repository.WriteDataStore();
+history.Run(new AppendTextCommand(editor, "Hello "));
+Console.WriteLine($"After append 1: \"{editor.Content}\"");
 
-// undo the last command
-commandManager.Undo();
-repository.WriteDataStore();
+history.Run(new AppendTextCommand(editor, "World!"));
+Console.WriteLine($"After append 2: \"{editor.Content}\"");
 
-commandManager.Invoke(new AddEmployeeToManagerList(repository, 1, new Employee(222, "Clara")));
-repository.WriteDataStore();
+history.Run(new ClearTextCommand(editor));
+Console.WriteLine($"After clear:    \"{editor.Content}\"");
 
-commandManager.Invoke(new AddEmployeeToManagerList(repository, 2, new Employee(333, "Tom")));
-repository.WriteDataStore();
+// Undo commands in reverse order (LIFO)
+history.Undo();
+Console.WriteLine($"After undo 1:   \"{editor.Content}\"");
 
-// try adding the same employee again: CanExecute() blocks it
-commandManager.Invoke(new AddEmployeeToManagerList(repository, 2, new Employee(333, "Tom")));
-repository.WriteDataStore();
+history.Undo();
+Console.WriteLine($"After undo 2:   \"{editor.Content}\"");
 
-commandManager.UndoAll();
-repository.WriteDataStore();
+history.Undo();
+Console.WriteLine($"After undo 3:   \"{editor.Content}\"");
