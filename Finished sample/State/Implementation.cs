@@ -1,110 +1,77 @@
-﻿// State: an object (the bank account) changes its behavior when its internal
-// state changes. Each state is its own class, and decides which state comes next.
+﻿// State: an object changes its behavior when its internal state changes.
+// Each state is its own class that handles actions and decides the next state.
 namespace State;
 
+// State types and TransitionTo are internal: hidden from other assemblies,
+// and signaling in this single-project demo that callers should only use Order.
 /// <summary>State</summary>
-public abstract class BankAccountState(decimal balance, BankAccount bankAccount)
+internal interface IOrderState
 {
-    public BankAccount BankAccount { get; } = bankAccount;
-    public decimal Balance { get; protected set; } = balance;
-
-    public abstract void Deposit(decimal amount);
-    public abstract void Withdraw(decimal amount);
-}
-
-/// <summary>ConcreteState: the balance is below 0</summary>
-public class OverdrawnState(decimal balance, BankAccount bankAccount)
-    : BankAccountState(balance, bankAccount)
-{
-    public override void Deposit(decimal amount)
-    {
-        Console.WriteLine($"In {GetType().Name}, depositing {amount}");
-        Balance += amount;
-        if (Balance >= 0)
-        {
-            // change state to regular
-            BankAccount.BankAccountState = new RegularState(Balance, BankAccount);
-        }
-    }
-
-    public override void Withdraw(decimal amount)
-    {
-        // cannot withdraw
-        Console.WriteLine($"In {GetType().Name}, cannot withdraw, balance {Balance}");
-    }
-}
-
-/// <summary>ConcreteState: the balance is between 0 and 1000</summary>
-public class RegularState(decimal balance, BankAccount bankAccount)
-    : BankAccountState(balance, bankAccount)
-{
-    public override void Deposit(decimal amount)
-    {
-        Console.WriteLine($"In {GetType().Name}, depositing {amount}");
-        Balance += amount;
-        if (Balance >= 1000)
-        {
-            // change state to gold
-            BankAccount.BankAccountState = new GoldState(Balance, BankAccount);
-        }
-    }
-
-    public override void Withdraw(decimal amount)
-    {
-        Console.WriteLine($"In {GetType().Name}, withdrawing {amount} from {Balance}");
-        Balance -= amount;
-        if (Balance < 0)
-        {
-            // change state to overdrawn
-            BankAccount.BankAccountState = new OverdrawnState(Balance, BankAccount);
-        }
-    }
-}
-
-/// <summary>ConcreteState: the balance is 1000 or more, deposits get a bonus</summary>
-public class GoldState(decimal balance, BankAccount bankAccount)
-    : BankAccountState(balance, bankAccount)
-{
-    public override void Deposit(decimal amount)
-    {
-        Console.WriteLine($"In {GetType().Name}, depositing {amount} + 10% bonus: {amount / 10}");
-        Balance += amount + (amount / 10);
-    }
-
-    public override void Withdraw(decimal amount)
-    {
-        Console.WriteLine($"In {GetType().Name}, withdrawing {amount} from {Balance}");
-        Balance -= amount;
-        if (Balance < 0)
-        {
-            // change state to overdrawn
-            BankAccount.BankAccountState = new OverdrawnState(Balance, BankAccount);
-        }
-        else if (Balance < 1000)
-        {
-            // change state to regular
-            BankAccount.BankAccountState = new RegularState(Balance, BankAccount);
-        }
-    }
+    string Name { get; }
+    void Pay(Order order);
+    void Ship(Order order);
 }
 
 /// <summary>
-/// Context: hands every request to its current state object.
+/// Context: delegates every action to its current state object.
 /// </summary>
-public class BankAccount
+public class Order
 {
-    public BankAccountState BankAccountState { get; set; }
-    public decimal Balance => BankAccountState.Balance;
+    private IOrderState _state = new PendingState();
 
-    public BankAccount()
+    public string StateName => _state.Name;
+
+    // The behavior changes because the state object changes, not because of an if/switch
+    public void Pay() => _state.Pay(this);
+
+    public void Ship() => _state.Ship(this);
+
+    // Intended for the state classes only (marked internal for this single-project demo)
+    internal void TransitionTo(IOrderState nextState)
     {
-        // a new account starts as a regular account with a balance of 200
-        BankAccountState = new RegularState(200, this);
+        Console.WriteLine($"Order state: {_state.Name} -> {nextState.Name}");
+        _state = nextState;
+    }
+}
+
+/// <summary>ConcreteState</summary>
+internal class PendingState : IOrderState
+{
+    public string Name => "Pending";
+
+    public void Pay(Order order)
+    {
+        Console.WriteLine("Payment received.");
+        order.TransitionTo(new PaidState());
     }
 
-    // let the current state handle the deposit
-    public void Deposit(decimal amount) => BankAccountState.Deposit(amount);
+    public void Ship(Order order) =>
+        Console.WriteLine("Cannot ship: order has not been paid yet.");
+}
 
-    // let the current state handle the withdrawal
-    public void Withdraw(decimal amount) => BankAccountState.Withdraw(amount);
+/// <summary>ConcreteState</summary>
+internal class PaidState : IOrderState
+{
+    public string Name => "Paid";
+
+    public void Pay(Order order) =>
+        Console.WriteLine("Order is already paid.");
+
+    public void Ship(Order order)
+    {
+        Console.WriteLine("Order shipped.");
+        order.TransitionTo(new ShippedState());
+    }
+}
+
+/// <summary>ConcreteState</summary>
+internal class ShippedState : IOrderState
+{
+    public string Name => "Shipped";
+
+    public void Pay(Order order) =>
+        Console.WriteLine("Order is already paid.");
+
+    public void Ship(Order order) =>
+        Console.WriteLine("Order is already shipped.");
 }
